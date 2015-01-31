@@ -10,6 +10,7 @@ import UIKit
 
 class ViewController: UIViewController
 {
+    @IBOutlet weak var history: UILabel!
     @IBOutlet weak var display: UILabel!
 
     var userIsInTheMiddleOfTypingANumber = false
@@ -22,6 +23,9 @@ class ViewController: UIViewController
             }
         } else {
             if digit == "." {
+                if displayValue > 0 {
+                    display.text = "0"
+                }
                 display.text = display.text! + digit
             } else {
                 display.text = digit
@@ -30,11 +34,22 @@ class ViewController: UIViewController
         }
     }
 
+    @IBAction func clear() {
+        userIsInTheMiddleOfTypingANumber = false
+        history.text! = ""
+        display.text! = "0"
+        operandStack.removeAll(keepCapacity: false)
+        historyStack.removeAll(keepCapacity: false)
+    }
+
     @IBAction func operate(sender: UIButton) {
         let operation = sender.currentTitle!
         if userIsInTheMiddleOfTypingANumber {
             enter()
         }
+        // FIXME: this line will make duplicate operation history
+        historyStack.append(operation)
+
         switch operation {
         case "×": performOperation { $0 * $1 }
         case "÷": performOperation { $1 / $0 }
@@ -68,10 +83,15 @@ class ViewController: UIViewController
     }
 
     var operandStack = Array<Double>()
+    var historyStack = Array<String>()
     @IBAction func enter() {
+        if userIsInTheMiddleOfTypingANumber {
+            historyStack.append(display.text!)
+        }
         userIsInTheMiddleOfTypingANumber = false
         operandStack.append(displayValue)
-        println("operandStack = \(operandStack)")
+        println("operandStack = \(operandStack), historyStack = \(historyStack)")
+        history.text = "\(historyStack)"
     }
 
     var displayValue: Double {
@@ -83,5 +103,6 @@ class ViewController: UIViewController
             userIsInTheMiddleOfTypingANumber = false
         }
     }
+
 }
 
